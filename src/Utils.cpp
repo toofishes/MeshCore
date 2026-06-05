@@ -27,7 +27,12 @@ void Utils::sha256(uint8_t *hash, size_t hash_len, const uint8_t* frag1, int fra
   sha.finalize(hash, hash_len);
 }
 
-int Utils::decrypt(const uint8_t* shared_secret, uint8_t* dest, const uint8_t* src, int src_len) {
+/**
+ * \brief  Decrypt the 'src' bytes using AES128 cipher, using 'shared_secret' as key, with key length fixed at CIPHER_KEY_SIZE.
+ *         'src_len' should be multiple of block size, as returned by 'encrypt()'.
+ * \returns  The length in bytes put into 'dest'. (dest may contain trailing zero bytes in final block)
+*/
+static int decrypt(const uint8_t* shared_secret, uint8_t* dest, const uint8_t* src, int src_len) {
   AES128 aes;
   uint8_t* dp = dest;
   const uint8_t* sp = src;
@@ -41,7 +46,12 @@ int Utils::decrypt(const uint8_t* shared_secret, uint8_t* dest, const uint8_t* s
   return sp - src;  // will always be multiple of 16
 }
 
-int Utils::encrypt(const uint8_t* shared_secret, uint8_t* dest, const uint8_t* src, int src_len) {
+/**
+ * \brief  Encrypts the 'src' bytes using AES128 cipher, using 'shared_secret' as key, with key length fixed at CIPHER_KEY_SIZE.
+ *         Final block is padded with zero bytes before encrypt. Result stored in 'dest'.
+ * \returns  The length in bytes put into 'dest'. (rounded up to block size)
+*/
+static int encrypt(const uint8_t* shared_secret, uint8_t* dest, const uint8_t* src, int src_len) {
   AES128 aes;
   uint8_t* dp = dest;
 
