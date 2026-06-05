@@ -10,6 +10,7 @@ class PacketQueue {
 
 public:
   PacketQueue(int max_entries);
+  ~PacketQueue();
   mesh::Packet* get(uint32_t now);
   bool add(mesh::Packet* packet, uint8_t priority, uint32_t scheduled_for);
   int count() const { return _num; }
