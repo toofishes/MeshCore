@@ -146,6 +146,12 @@ void Dispatcher::loop() {
 }
 
 bool Dispatcher::tryParsePacket(Packet* pkt, const uint8_t* raw, int len) {
+  // need at least header + path_len; transport codes will be parsed later if header indicates they are present
+  if (len < 2) {
+    MESH_DEBUG_PRINTLN("%s Dispatcher::checkRecv(): partial or corrupt packet received, len=%d", getLogDateTime(), len);
+    return false;
+  }
+
   int i = 0;
 
   pkt->header = raw[i++];
@@ -155,6 +161,10 @@ bool Dispatcher::tryParsePacket(Packet* pkt, const uint8_t* raw, int len) {
   }
 
   if (pkt->hasTransportCodes()) {
+    if (i + 4 >= len) {
+      MESH_DEBUG_PRINTLN("%s Dispatcher::checkRecv(): partial or corrupt packet received, len=%d", getLogDateTime(), len);
+      return false;
+    }
     memcpy(&pkt->transport_codes[0], &raw[i], 2); i += 2;
     memcpy(&pkt->transport_codes[1], &raw[i], 2); i += 2;
   } else {
@@ -168,7 +178,7 @@ bool Dispatcher::tryParsePacket(Packet* pkt, const uint8_t* raw, int len) {
     return false;
   }
 
-  uint8_t path_byte_len = (pkt->path_len & 63) * pkt->getPathHashSize();
+  uint8_t path_byte_len = pkt->getPathHashCount() * pkt->getPathHashSize();
   if (path_byte_len > MAX_PATH_SIZE || i + path_byte_len > len) {
     MESH_DEBUG_PRINTLN("%s Dispatcher::checkRecv(): partial or corrupt packet received, len=%d", getLogDateTime(), len);
     return false;
