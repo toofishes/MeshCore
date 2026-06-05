@@ -27,7 +27,7 @@ void Utils::sha256(uint8_t *hash, size_t hash_len, const uint8_t* frag1, int fra
   sha.finalize(hash, hash_len);
 }
 
-int Utils::decrypt(const uint8_t* shared_secret, uint8_t* dest, const uint8_t* src, int src_len) {
+static int decrypt(const uint8_t* shared_secret, uint8_t* dest, const uint8_t* src, int src_len) {
   AES128 aes;
   uint8_t* dp = dest;
   const uint8_t* sp = src;
@@ -41,7 +41,7 @@ int Utils::decrypt(const uint8_t* shared_secret, uint8_t* dest, const uint8_t* s
   return sp - src;  // will always be multiple of 16
 }
 
-int Utils::encrypt(const uint8_t* shared_secret, uint8_t* dest, const uint8_t* src, int src_len) {
+static int encrypt(const uint8_t* shared_secret, uint8_t* dest, const uint8_t* src, int src_len) {
   AES128 aes;
   uint8_t* dp = dest;
 
