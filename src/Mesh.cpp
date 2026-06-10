@@ -364,6 +364,11 @@ DispatcherAction Mesh::routeRecvPacket(Packet* packet) {
 }
 
 DispatcherAction Mesh::forwardMultipartDirect(Packet* pkt) {
+  if (pkt->payload_len < 1) {
+    MESH_DEBUG_PRINTLN("%s Mesh::forwardMultipartDirect(): incomplete multipart packet", getLogDateTime());
+    return ACTION_RELEASE;
+  }
+
   uint8_t remaining = pkt->payload[0] >> 4;  // num of packets in this multipart sequence still to be sent
   uint8_t type = pkt->payload[0] & 0x0F;
 
