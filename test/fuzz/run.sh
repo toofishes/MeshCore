@@ -16,6 +16,6 @@ ASAN_OPTIONS=detect_leaks=1 \
 
 echo "Generating coverage report..."
 llvm-profdata merge -sparse ${BUILD_DIR}/program.profraw -o ${BUILD_DIR}/program.profdata
-llvm-cov show ${BUILD_DIR}/program -instr-profile=${BUILD_DIR}/program.profdata -format=html -output-dir=${BUILD_DIR}/coverage
+llvm-cov show ${BUILD_DIR}/program -instr-profile=${BUILD_DIR}/program.profdata -format=html -output-dir=${BUILD_DIR}/coverage -ignore-filename-regex='.pio/libdeps/.*'
 
 echo "Fuzzing complete. Coverage report generated at ${BUILD_DIR}/coverage/index.html"
