@@ -41,6 +41,11 @@ int Mesh::searchChannelsByHash(const uint8_t* hash, GroupChannel channels[], int
 DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
   if (pkt->isRouteDirect() && pkt->getPayloadType() == PAYLOAD_TYPE_TRACE) {
     if (pkt->path_len < MAX_PATH_SIZE) {
+      if (pkt->payload_len < 9) {
+        MESH_DEBUG_PRINTLN("%s Mesh::onRecvPacket(): incomplete TRACE packet", getLogDateTime());
+        return ACTION_RELEASE;
+      }
+
       uint8_t i = 0;
       uint32_t trace_tag;
       memcpy(&trace_tag, &pkt->payload[i], 4); i += 4;
