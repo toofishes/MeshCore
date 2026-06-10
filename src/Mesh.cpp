@@ -339,22 +339,18 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
 }
 
 void Mesh::removeSelfFromPath(Packet* pkt) {
-  // remove our hash from 'path'
+  // remove our hash from 'path' by removing the first entry, and shifting the rest forward.
+  memmove(pkt->path, pkt->path + pkt->getPathHashSize(), pkt->getPathByteLen() - pkt->getPathHashSize());
   pkt->setPathHashCount(pkt->getPathHashCount() - 1);  // decrement the count
-
-  uint8_t sz = pkt->getPathHashSize();
-  for (int k = 0; k < pkt->getPathHashCount()*sz; k += sz) {  // shuffle path by 1 'entry'
-    memcpy(&pkt->path[k], &pkt->path[k + sz], sz);
-  }
 }
 
 DispatcherAction Mesh::routeRecvPacket(Packet* packet) {
   uint8_t n = packet->getPathHashCount();
   if (packet->isRouteFlood() && !packet->isMarkedDoNotRetransmit()
-    && (n + 1)*packet->getPathHashSize() <= MAX_PATH_SIZE && allowPacketForward(packet)) {
+    && (n + 1)*packet->getPathHashSize() < MAX_PATH_SIZE && allowPacketForward(packet)) {
     // append this node's hash to 'path'
-    self_id.copyHashTo(&packet->path[n * packet->getPathHashSize()], packet->getPathHashSize());
     packet->setPathHashCount(n + 1);
+    self_id.copyHashTo(&packet->path[n * packet->getPathHashSize()], packet->getPathHashSize());
 
     uint32_t d = getRetransmitDelay(packet);
     // as this propagates outwards, give it lower and lower priority
