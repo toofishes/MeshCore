@@ -65,7 +65,7 @@ public:
     auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
     return seconds;
   }
-  void setCurrentTime(uint32_t time) override {  }
+  void setCurrentTime(uint32_t time) override { }
 };
 
 /**
@@ -128,6 +128,10 @@ public:
   }
 
   void onContactResponse(const ContactInfo& contact, const uint8_t* data, uint8_t len) override { }
+
+  bool shouldOverwriteWhenFull() const override {
+    return true;
+  }
 
   int searchChannelsByHash(const uint8_t* hash, mesh::GroupChannel dest[], int max_matches) override {
     int n = 0;
