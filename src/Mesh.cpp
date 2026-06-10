@@ -82,10 +82,9 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
   if (pkt->isRouteDirect() && pkt->getPathHashCount() > 0) {
     // check for 'early received' ACK
     if (pkt->getPayloadType() == PAYLOAD_TYPE_ACK) {
-      int i = 0;
-      uint32_t ack_crc;
-      memcpy(&ack_crc, &pkt->payload[i], 4); i += 4;
-      if (i <= pkt->payload_len) {
+      if (pkt->payload_len >= 4) {
+        uint32_t ack_crc;
+        memcpy(&ack_crc, &pkt->payload[0], 4);
         onAckRecv(pkt, ack_crc);
       }
     }
@@ -117,14 +116,15 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
 
   switch (pkt->getPayloadType()) {
     case PAYLOAD_TYPE_ACK: {
-      int i = 0;
-      uint32_t ack_crc;
-      memcpy(&ack_crc, &pkt->payload[i], 4); i += 4;
-      if (i > pkt->payload_len) {
+      if (pkt->payload_len < 4) {
         MESH_DEBUG_PRINTLN("%s Mesh::onRecvPacket(): incomplete ACK packet", getLogDateTime());
-      } else if (!_tables->hasSeen(pkt)) {
-        onAckRecv(pkt, ack_crc);
-        action = routeRecvPacket(pkt);
+      } else {
+        uint32_t ack_crc;
+        memcpy(&ack_crc, &pkt->payload[0], 4);
+        if (!_tables->hasSeen(pkt)) {
+          onAckRecv(pkt, ack_crc);
+          action = routeRecvPacket(pkt);
+        }
       }
       break;
     }
