@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sanitizer/common_interface_defs.h>
+
 #include <MeshCore.h>
 
 namespace mesh {
@@ -45,9 +47,13 @@ public:
 
   uint8_t header;
   uint16_t payload_len, path_len;
+  uint64_t _space_0;
   uint16_t transport_codes[2];
+  uint64_t _space_1;
   uint8_t path[MAX_PATH_SIZE];
+  uint64_t _space_2;
   uint8_t payload[MAX_PACKET_PAYLOAD];
+  uint64_t _space_3;
   int8_t _snr;
 
   /**
@@ -79,7 +85,14 @@ public:
   uint8_t getPathHashSize() const { return (path_len >> 6) + 1; }
   uint8_t getPathHashCount() const { return path_len & 63; }
   uint8_t getPathByteLen() const { return getPathHashCount() * getPathHashSize(); }
-  void setPathHashCount(uint8_t n) { path_len &= ~63; path_len |= n & 63; }
+  //void setPathHashCount(uint8_t n) { path_len &= ~63; path_len |= n & 63; }
+
+  void setPathHashCount(uint8_t n) {
+    auto old_len = getPathByteLen();
+    path_len &= ~63; path_len |= n & 63;
+    __sanitizer_annotate_contiguous_container(path, path + MAX_PATH_SIZE, path + old_len, path + getPathByteLen());
+  }
+
   void setPathHashSizeAndCount(uint8_t sz, uint8_t n) { path_len = ((sz - 1) << 6) | (n & 63); }
 
   static uint8_t copyPath(uint8_t* dest, const uint8_t* src, uint8_t path_len);  // returns path_len
