@@ -96,6 +96,18 @@ public:
     return true;
   }
 
+  int searchChannelsByHash(const uint8_t* hash, mesh::GroupChannel dest[], int max_matches) override {
+    int n = 0;
+    if (hash[0] == 0x11) {
+      // known "Public" channel
+      dest[n++] = { .hash = {0x11}, .secret = {0x8b, 0x33, 0x87, 0xe9, 0xc5, 0xcd, 0xea, 0x6a, 0xc9, 0xe5, 0xed, 0xba, 0xa1, 0x15, 0xcd, 0x72} };
+    } else if (hash[0] == 0xd9) {
+      // known "#test" channel
+      dest[n++] = { .hash = {0xd9}, .secret = {0x9c, 0xd8, 0xfc, 0xf2, 0x2a, 0x47, 0x33, 0x3b, 0x59, 0x1d, 0x96, 0xa2, 0xb8, 0x48, 0xb7, 0x3f} };
+    }
+    return n;
+  }
+
 	// onRecvPacket is protected; expose it for fuzz testing.
 	mesh::DispatcherAction testOnRecvPacket(mesh::Packet* pkt) {
 		return onRecvPacket(pkt);
