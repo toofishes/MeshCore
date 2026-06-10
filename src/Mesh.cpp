@@ -224,13 +224,16 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
     }
     case PAYLOAD_TYPE_GRP_DATA: 
     case PAYLOAD_TYPE_GRP_TXT: {
+      if (pkt->payload_len < 1 + CIPHER_MAC_SIZE) {
+        MESH_DEBUG_PRINTLN("%s Mesh::onRecvPacket(): incomplete data packet", getLogDateTime());
+        return ACTION_RELEASE;
+      }
+
       int i = 0;
       uint8_t channel_hash = pkt->payload[i++];
 
       uint8_t* macAndData = &pkt->payload[i];   // MAC + encrypted data 
-      if (i + 2 >= pkt->payload_len) {
-        MESH_DEBUG_PRINTLN("%s Mesh::onRecvPacket(): incomplete data packet", getLogDateTime());
-      } else if (!_tables->hasSeen(pkt)) {
+      if (!_tables->hasSeen(pkt)) {
         // scan channels DB, for all matching hashes of 'channel_hash' (max 4 matches supported ATM)
         GroupChannel channels[4];
         int num = searchChannelsByHash(&channel_hash, channels, 4);
