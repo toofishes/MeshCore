@@ -14,7 +14,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   static FuzzerMillis ms;
   static FuzzerRNG rng;
   static FuzzerRTC rtc;
-  static StaticPoolPacketManager mgr(1);
+  static StaticPoolPacketManager mgr(64);
   static SimpleMeshTables tables;
   static FuzzerMesh mesh(radio, ms, rng, rtc, mgr, tables);
 
@@ -39,6 +39,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         payload_ptr + pkt->payload_len, payload_ptr + MAX_PACKET_PAYLOAD);
   }
   mesh.releasePacket(pkt);
+
+  // some code paths queue outbound packets; clean them up before the next fuzz input.
+  while (true) {
+    auto outbound = mgr.getNextOutbound(UINT32_MAX);
+    if (outbound == nullptr) break;
+    mesh.releasePacket(outbound);
+  }
 
   return 0;
 }
