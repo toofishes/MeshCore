@@ -44,7 +44,7 @@ public:
  */
 class FuzzerMillis : public mesh::MillisecondClock {
 public:
-	unsigned long getMillis() override {
+  unsigned long getMillis() override {
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
@@ -57,7 +57,7 @@ public:
  */
 class FuzzerRTC : public mesh::RTCClock {
 public:
-	FuzzerRTC() { }
+  FuzzerRTC() { }
   uint32_t getCurrentTime() override {
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();
@@ -72,8 +72,8 @@ public:
  */
 class FuzzerRNG : public mesh::RNG {
 public:
-	void random(uint8_t* dest, size_t sz) override {
-		memset(dest, 42, sz);
+  void random(uint8_t* dest, size_t sz) override {
+    memset(dest, 42, sz);
   }
 };
 
@@ -84,13 +84,13 @@ public:
  */
 class FuzzerMesh : public mesh::Mesh {
 public:
-	FuzzerMesh(mesh::Radio& radio,
-						 mesh::MillisecondClock& ms,
-						 mesh::RNG& rng,
-						 mesh::RTCClock& rtc,
-						 mesh::PacketManager& mgr,
-						 mesh::MeshTables& tables)
-		: mesh::Mesh(radio, ms, rng, rtc, mgr, tables) {}
+  FuzzerMesh(mesh::Radio& radio,
+             mesh::MillisecondClock& ms,
+             mesh::RNG& rng,
+             mesh::RTCClock& rtc,
+             mesh::PacketManager& mgr,
+             mesh::MeshTables& tables)
+    : mesh::Mesh(radio, ms, rng, rtc, mgr, tables) {}
 
   bool allowPacketForward(const mesh::Packet* packet) override {
     return true;
@@ -108,8 +108,8 @@ public:
     return n;
   }
 
-	// onRecvPacket is protected; expose it for fuzz testing.
-	mesh::DispatcherAction testOnRecvPacket(mesh::Packet* pkt) {
-		return onRecvPacket(pkt);
-	}
+  // onRecvPacket is protected; expose it for fuzz testing.
+  mesh::DispatcherAction testOnRecvPacket(mesh::Packet* pkt) {
+    return onRecvPacket(pkt);
+  }
 };
