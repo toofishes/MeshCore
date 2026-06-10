@@ -46,19 +46,21 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
         return ACTION_RELEASE;
       }
 
-      uint8_t i = 0;
+      int i = 0;
       uint32_t trace_tag;
       memcpy(&trace_tag, &pkt->payload[i], 4); i += 4;
       uint32_t auth_code;
       memcpy(&auth_code, &pkt->payload[i], 4); i += 4;
       uint8_t flags = pkt->payload[i++];
-      uint8_t path_sz = flags & 0x03;  // NEW v1.11+: lower 2 bits is path hash size
+      // NEW v1.11+: lower 2 bits is path hash size.
+      // NOTE: this came before generalized multi-byte pathing support elsewhere, and supports
+      // 1/2/4/8 byte size paths via left shift, not 1/2/3 like the general implementation.
+      uint8_t path_sz = flags & 0x03;
 
-      uint8_t len = pkt->payload_len - i;
+      int len = (int)pkt->payload_len - i;
       // path_len*entry_size can exceed 255 (path_len up to 63, entry_size up to 8);
-      // a uint8_t offset would wrap and steer the isHashMatch() read to the wrong place.
-      uint16_t offset = (uint16_t)pkt->path_len << path_sz;
-      if (offset >= len) {   // TRACE has reached end of given path
+      int offset = pkt->path_len << path_sz;
+      if (offset + (1 << path_sz) > len) {   // TRACE has reached end of given path
         onTraceRecv(pkt, trace_tag, auth_code, flags, pkt->path, &pkt->payload[i], len);
       } else if (self_id.isHashMatch(&pkt->payload[i + offset], 1 << path_sz) && allowPacketForward(pkt) && !_tables->hasSeen(pkt)) {
         // append SNR (Not hash!)
