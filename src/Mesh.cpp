@@ -71,7 +71,7 @@ DispatcherAction Mesh::onRecvPacket(Packet* pkt) {
     return ACTION_RELEASE;
   }
 
-  if (pkt->isRouteDirect() && pkt->getPayloadType() == PAYLOAD_TYPE_CONTROL && (pkt->payload[0] & 0x80) != 0) {
+  if (pkt->isRouteDirect() && pkt->getPayloadType() == PAYLOAD_TYPE_CONTROL && pkt->payload_len > 0 && (pkt->payload[0] & 0x80) != 0) {
     if (pkt->getPathHashCount() == 0) {
       onControlDataRecv(pkt);
     }
