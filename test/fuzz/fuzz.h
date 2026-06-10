@@ -92,6 +92,10 @@ public:
 						 mesh::MeshTables& tables)
 		: mesh::Mesh(radio, ms, rng, rtc, mgr, tables) {}
 
+  bool allowPacketForward(const mesh::Packet* packet) override {
+    return true;
+  }
+
 	// onRecvPacket is protected; expose it for fuzz testing.
 	mesh::DispatcherAction testOnRecvPacket(mesh::Packet* pkt) {
 		return onRecvPacket(pkt);
